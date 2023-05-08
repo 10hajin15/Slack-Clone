@@ -1,8 +1,9 @@
 import useInput from "@hooks/useInput";
 import { Button, Form, Header, Input, Label, LinkContainer } from "@pages/SignUp/styles";
 import fetcher from "@utils/fetcher";
-import React from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import React, { useCallback, useState } from "react";
+import { Link, Redirect } from "react-router-dom";
 import useSWR from "swr";
 
 
@@ -10,15 +11,42 @@ import useSWR from "swr";
 const LogIn = () => {
   const { data, error, revalidate, mutate } = useSWR("http://localhost:3095/api/users", fetcher);
 
+  const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
 
-  
+  const onSubmit = useCallback((e) => {
+    e.preventDefault();
+    setLogInError(false);
+
+    axios
+      .post(
+        'http://localhost:3095/api/users/login',
+        { email, password },
+        {
+          withCredentials: true,
+        }
+      )
+      .then((res) => {
+        mutate(res.data, false);
+      })
+      .catch((err) => {
+        setLogInError(error.response?.data?.statusCode === 401);
+      })
+  }, [email, password]);
+
+  if(data === undefined) {
+    return <div>로딩중 ...</div>
+  };
+
+  if(data) {
+    return <Redirect to="/workspace/channel" />
+  }
 
   return (
     <div id="container">
       <Header>Sleact</Header>
-      <Form>
+      <Form onSubmit={onSubmit}>
         <Label id="email-label">
           <span>이메일 주소</span>
           <div>
