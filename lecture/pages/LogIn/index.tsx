@@ -10,7 +10,6 @@ import useSWR from "swr";
 
 const LogIn = () => {
   const { data, error, revalidate, mutate } = useSWR("http://localhost:3095/api/users", fetcher);
-
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
@@ -27,10 +26,10 @@ const LogIn = () => {
           withCredentials: true,
         }
       )
-      .then((res) => {
-        mutate(res.data, false);
+      .then((response) => {
+        mutate(response.data, false);      //OPTIMISTIC UI
       })
-      .catch((err) => {
+      .catch((error) => {
         setLogInError(error.response?.data?.statusCode === 401);
       })
   }, [email, password]);

@@ -37,7 +37,6 @@ const SignUp = () => {
     (e) => {
       e.preventDefault();
       if (!mismatchError && nickname) {
-        console.log('서버로 회원가입하기');
         setSignUpError('');
         setSignUpSuccess(false);
         axios
@@ -47,11 +46,9 @@ const SignUp = () => {
             password,
           })
           .then((response) => {
-            console.log(response);
             setSignUpSuccess(true);
           })
           .catch((error) => {
-            console.log(error.response);
             setSignUpError(error.response.data);
           })
           .finally(() => {});
@@ -65,7 +62,7 @@ const SignUp = () => {
   }
 
   if (data) {
-    return <Redirect to="/workspace/sleact/channel/일반" />;
+    return <Redirect to="/workspace/channel" />;
   }
 
   return (
