@@ -12,6 +12,7 @@ import { IUser } from '@typings/db'
 import Modal from "@components/Modal";
 import { Button, Input, Label } from "@pages/SignUp/styles";
 import useInput from "@hooks/useInput";
+import { toast } from "react-toastify";
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
@@ -39,6 +40,11 @@ const Workspace: FC = ({children}) => {
       })
   }, []);
 
+  const onCloseUserProfile = useCallback((e) => {
+    e.stopPropagation();
+    setShowUserMenu(false);
+  }, []);
+
   // 토글함수
   const onClickUserProfile = useCallback(() => {
     setShowUserMenu((prev) => !prev)
@@ -48,9 +54,27 @@ const Workspace: FC = ({children}) => {
     setShowCreateWorkspaceModal(true);
   }, []);
 
-  const onCreateWorkspace = useCallback(() => {
-
-  }, []);
+  const onCreateWorkspace = useCallback((e) => {
+    e.preventDefault();
+    if (!newWorkspace || !newWorkspace.trim()) return;
+    if(!newUrl || !newUrl.trim()) return;
+    axios.post('http://localhost:3095/api/workspaces', {
+      workspace: newWorkspace,
+      url: newUrl
+    }, {
+      withCredentials: true,
+    })
+    .then(() => {
+      revalidate();
+      setShowCreateWorkspaceModal(false);
+      setNewUrl('');
+      setNewWorkspace('');
+    })
+    .catch((error) => {
+      console.dir(error);
+      toast.error(error.responese?.data, {position: 'bottom-center'});
+    })
+  }, [newWorkspace, newUrl]);
 
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
@@ -67,7 +91,7 @@ const Workspace: FC = ({children}) => {
           <span onClick={onClickUserProfile}>
             <ProfileImg src={gravatar.url(userData.email, {s: '28px', d: 'retro'})} alt ={userData.nickname} />
             {showUserMenu && (
-              <Menu style={{right: 0, top: 38}} show={showUserMenu} onCloseModal={onClickUserProfile}>
+              <Menu style={{right: 0, top: 38}} show={showUserMenu} onCloseModal={onCloseUserProfile}>
                 <ProfileModal>
                   <img src={gravatar.url(userData.email, {s: '28px', d: 'retro'})} alt ={userData.nickname} />
                   <div>
